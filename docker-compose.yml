@@ -1,0 +1,61 @@
+services:
+  db:
+    image: postgres:15
+    container_name: epet-db
+
+    environment:
+      &pg-environment
+      POSTGRES_USER: "epet"
+      POSTGRES_PASSWORD: "epet-pg-test"
+      POSTGRES_DB: "epet-test.db"
+    ports:
+      - 5432:5432
+
+  redis:
+    image: redis:alpine
+    container_name: epet-redis
+
+    environment:
+      REDIS_KEY: "1234567890123456789012345678901234567890123456789012345678901234"
+    ports:
+      - 6379:6379
+
+    command: redis-server --loglevel verbose
+
+  pet:
+    image: pet-service
+    container_name: pet-service
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    stdin_open: true
+    volumes:
+      - .:/workspace/pet-service:cached
+      - build:/opt/build:rw
+
+  dev:
+    image: epet-dev
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    stdin_open: true
+    privileged: true
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp:unconfined
+
+    environment:
+      <<: *pg-environment
+      REDIS_KEY: "1234567890123456789012345678901234567890123456789012345678901234"
+      RUST_TEST_THREADS: "1"
+
+    volumes:
+      - .:/workspace:cached
+      - build:/opt/build:rw
+
+    command: /bin/sh -c "while sleep 1000; do :; done"
+
+volumes:
+  build:
+    external: true
