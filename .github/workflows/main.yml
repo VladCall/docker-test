@@ -23,7 +23,7 @@ jobs:
       - name: docker-compose build
         run: docker-compose build
       - name: docker-compose up
-        run: docker-compose up
+        run: docker-compose up -d
       - name: docker-compose exec
         run: docker-compose exec dev bash
       - name: docker-compose to folder
