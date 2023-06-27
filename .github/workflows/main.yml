@@ -25,7 +25,7 @@ jobs:
       - name: docker-compose up
         run: docker-compose up -d
       - name: docker-compose exec
-        run: docker-compose exec dev bash
+        run: docker-compose exec -T dev bash
       - name: docker-compose to folder
         run: ls -l && cd workspace
       - name: folder
