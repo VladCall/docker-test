@@ -1,21 +1,32 @@
-name: Deploy
+name: cissws
+
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - "main"
+
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: astappiev/docker-compose-remote-action@master
-      name: Docker-Compose Remote Deployment
-      with:
-        ssh_host: example.com
-        ssh_user: ${{ secrets.DEPLOY_USERNAME }}
-        ssh_private_key: ${{ secrets.DEPLOY_PRIVATE_KEY }}
-        ssh_host_public_key: ${{ secrets.DEPLOY_PUBLIC_KEY }}
-        docker_compose_prefix: myapp
-    - name: folder
-      run: ls -l
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: create volume
+        run: docker volume create build
+      - name: docker-compose build
+        run: docker-compose build
+      - name: docker-compose up db redis
+        run: docker-compose up -d db redis 
+      - name: docker-compose up dev
+        run: docker-compose up -d dev
+      - name: docker-compose folders
+        run: ls -l
